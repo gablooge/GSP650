@@ -46,10 +46,25 @@ echo $EMAIL_SERVICE_URL
 
 gcloud pubsub subscriptions create email-service-sub --topic new-lab-report --push-endpoint=$EMAIL_SERVICE_URL --push-auth-service-account=pubsub-cloud-run-invoker@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com
 
-~/pet-theory/lab05/lab-service/post-reports.sh
+~/GSP650/pet-theory/lab05/lab-service/post-reports.sh
 
 
 cd ~/GSP650/pet-theory/lab05/sms-service
 
 npm install express
 npm install body-parser
+
+chmod u+x deploy.sh
+./deploy.sh
+
+
+gcloud run services add-iam-policy-binding sms-service --member=serviceAccount:pubsub-cloud-run-invoker@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com --role=roles/run.invoker --region us-central1 --platform managed
+
+SMS_SERVICE_URL=$(gcloud run services describe sms-service --platform managed --region us-central1 --format="value(status.address.url)")
+
+echo $SMS_SERVICE_URL
+
+gcloud pubsub subscriptions create sms-service-sub --topic new-lab-report --push-endpoint=$SMS_SERVICE_URL --push-auth-service-account=pubsub-cloud-run-invoker@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com
+
+~/GSP650/pet-theory/lab05/lab-service/post-reports.sh
+
